@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Raspadinha da Leidhany</title>
+<meta name="description" content="Raspe o bilhete e descubra uma frase da festa de aniversário da Leidhany.">
+<meta property="og:title" content="Raspadinha da Leidhany">
+<meta property="og:description" content="Tem uma frase escondida no bilhete. Raspe a sua!">
+<meta name="theme-color" content="#FFD23F">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ===== CORES E FONTES (troque aqui para combinar com a camisa) ===== */
+  :root {
+    --fundo: #FFD23F;          /* amarelo do fundo */
+    --bilhete: #FF4F8B;        /* rosa do bilhete */
+    --bilhete-escuro: #D93670;
+    --papel: #FFF5F9;          /* fundo onde a frase aparece */
+    --tinta: #2B0F4C;          /* roxo dos textos e contornos */
+    --destaque: #1FB5A8;       /* turquesa do botão do WhatsApp */
+    --fonte-titulo: "Bagel Fat One", "Arial Black", system-ui, sans-serif;
+    --fonte-texto: "Baloo 2", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: var(--fundo);
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(255, 79, 139, .38) 0 4px, transparent 5px),
+      radial-gradient(circle at 70% 80%, rgba(43, 15, 76, .16) 0 3px, transparent 4px),
+      radial-gradient(circle at 85% 20%, rgba(31, 181, 168, .38) 0 4px, transparent 5px);
+    background-size: 90px 90px, 70px 70px, 110px 110px;
+    color: var(--tinta);
+    font-family: var(--fonte-texto);
+    display: flex;
+    justify-content: center;
+    padding: max(28px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom));
+  }
+
+  main {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+  }
+
+  /* ===== Cabeçalho ===== */
+  .cabecalho { text-align: center; }
+  h1 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+  }
+  .h1-pre {
+    font-weight: 700;
+    font-size: 1.15rem;
+  }
+  .h1-nome {
+    font-family: var(--fonte-titulo);
+    font-weight: 400;
+    font-size: clamp(3rem, 15vw, 4.4rem);
+    text-shadow: 4px 4px 0 var(--bilhete);
+    transform: rotate(-3deg);
+    margin-top: 8px;
+  }
+  .cabecalho p {
+    margin-top: 16px;
+    font-size: 1.08rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  /* ===== Bilhete ===== */
+  .bilhete-sombra {
+    width: 100%;
+    filter: drop-shadow(0 6px 0 var(--tinta));
+  }
+  .bilhete-sombra.trocando { animation: entra .35s ease-out; }
+  @keyframes entra {
+    from { transform: translateY(12px) rotate(-2deg); opacity: .2; }
+    to   { transform: none; opacity: 1; }
+  }
+
+  .bilhete {
+    background: var(--bilhete);
+    border-radius: 14px;
+    padding: 16px 24px 12px;
+    -webkit-mask:
+      radial-gradient(circle 12px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat,
+      radial-gradient(circle 12px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
+    mask:
+      radial-gradient(circle 12px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat,
+      radial-gradient(circle 12px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
+  }
+
+  .bilhete-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-weight: 800;
+    font-size: 1.05rem;
+  }
+  .numero {
+    font-family: var(--fonte-titulo);
+    font-weight: 400;
+    font-size: 1.25rem;
+    white-space: nowrap;
+  }
+
+  .area-raspar {
+    position: relative;
+    margin: 12px 0;
+    min-height: 210px;
+    display: grid;
+    place-items: center;
+    padding: 22px 18px;
+    background: var(--papel);
+    border: 3px solid var(--tinta);
+    border-radius: 12px;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .frase {
+    font-weight: 800;
+    font-size: clamp(1.3rem, 5.6vw, 1.65rem);
+    line-height: 1.25;
+    text-align: center;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+  .cobertura {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    cursor: grab;
+    transition: opacity .45s ease;
+  }
+  .cobertura:active { cursor: grabbing; }
+  .cobertura.sumindo { opacity: 0; pointer-events: none; }
+
+  .bilhete-rodape {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    padding-top: 10px;
+    border-top: 2px dashed rgba(43, 15, 76, .45);
+    font-weight: 700;
+    font-size: .95rem;
+  }
+  .botao-texto {
+    background: none;
+    border: 0;
+    padding: 4px 0;
+    font: 700 .95rem var(--fonte-texto);
+    color: var(--tinta);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  /* ===== Botões ===== */
+  .acoes {
+    width: 100%;
+    display: grid;
+    gap: 14px;
+    margin-top: 4px;
+  }
+  .botao {
+    display: block;
+    width: 100%;
+    padding: 14px 20px;
+    border: 3px solid var(--tinta);
+    border-radius: 999px;
+    font: 800 1.15rem var(--fonte-texto);
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--tinta);
+    transition: transform .08s ease, box-shadow .08s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .botao:active { transform: translateY(4px); box-shadow: 0 0 0 var(--tinta); }
+  .botao-principal {
+    background: var(--tinta);
+    color: #fff;
+    box-shadow: 0 4px 0 var(--bilhete-escuro);
+  }
+  .botao-principal:active { box-shadow: 0 0 0 var(--bilhete-escuro); }
+  .botao-zap { background: var(--destaque); color: var(--tinta); }
+  .botao-fotos { background: var(--papel); color: var(--tinta); }
+
+  :focus-visible { outline: 3px solid var(--tinta); outline-offset: 3px; }
+
+  .contador {
+    min-height: 1.4em;
+    font-weight: 600;
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .so-leitor {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  #confete {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  @media (max-width: 360px) {
+    .bilhete { padding: 14px 18px 12px; }
+    .bilhete-topo { font-size: .98rem; }
+    .cabecalho p { font-size: .98rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header class="cabecalho">
+    <h1>
+      <span class="h1-pre">Aniversário da</span>
+      <span class="h1-nome" id="nome">Leidhany</span>
+    </h1>
+    <p>Tem uma frase escondida no bilhete.<br>Raspe com o dedo.</p>
+  </header>
+
+  <div class="bilhete-sombra" id="bilheteSombra">
+    <section class="bilhete" aria-label="Bilhete de raspadinha">
+      <div class="bilhete-topo">
+        <span>Raspadinha da festa</span>
+        <span class="numero" id="numero">nº 001</span>
+      </div>
+
+      <div class="area-raspar" id="area">
+        <p class="frase" id="frase" aria-hidden="true"></p>
+        <canvas class="cobertura" id="cobertura" role="img" aria-label="Área prateada para raspar"></canvas>
+      </div>
+
+      <div class="bilhete-rodape">
+        <span>Prêmio garantido: uma risada.</span>
+        <button type="button" class="botao-texto" id="btnRevelar">Revelar sem raspar</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="acoes">
+    <button type="button" class="botao botao-principal" id="btnOutra">Raspar outra</button>
+    <a class="botao botao-zap" id="btnZap" href="#" target="_blank" rel="noopener" hidden>Mandar no WhatsApp</a>
+    <a class="botao botao-fotos" id="btnFotos" href="#" target="_blank" rel="noopener" hidden>Tirar foto com a arte da festa</a>
+  </div>
+
+  <p class="contador" id="contador"></p>
+  <p class="so-leitor" id="aviso" aria-live="polite"></p>
+</main>
+
+<canvas id="confete" aria-hidden="true"></canvas>
+
+<script>
+/* =====================================================================
+   CONFIGURAÇÃO — edite só esta parte
+   - aniversariante: nome que aparece no topo e nas frases com {nome}
+   - linkFotos: cole o link do site de fotos da festa para aparecer o
+     botão "Tirar foto com a arte da festa" (deixe "" para esconder)
+   - frases: pode adicionar, tirar ou trocar à vontade
+   ===================================================================== */
+const CONFIG = {
+  aniversariante: "Leidhany",
+  linkFotos: "",
+  frases: [
+    "{nome} não fica mais velha. Ela sobe de nível.",
+    "Vim pelo bolo, fiquei pela aniversariante. Mentira, vim pelo bolo.",
+    "#ColaEmMimQueÉSucesso",
+    "Ela não tá envelhecendo. Tá ficando vintage.",
+    "Presente bom é presença. Mas pix também é presença, viu?",
+    "Ninguém vai embora antes do parabéns. Ninguém.",
+    "Hoje a dieta tirou folga e esqueceu de voltar.",
+    "Regra da festa: quem cantar o parabéns desafinado canta de novo.",
+    "Quem dança mal dança com mais vontade. Vai pra pista.",
+    "Se não tirou foto com a aniversariante, você nem veio.",
+    "Mandou parabéns à meia-noite em ponto? Subiu no conceito dela.",
+    "Aqui ninguém tem idade. Só tem disposição.",
+    "Atenção: aniversariante sob efeito de felicidade. Mantenha distância do bolo dela.",
+    "Hoje a pista é dela, o bolo é dela e o microfone também.",
+    "Elogiar a aniversariante conta como presente. Capricha.",
+    "Mais um ano de 'só mais uma música e eu vou embora'.",
+    "Amanhã não é ressaca. É saudade da festa.",
+    "Diz a lenda que o primeiro pedaço de bolo vai pro preferido. Torce aí.",
+    "A aniversariante pediu pra não contar a idade dela. A gente obedeceu.",
+    "Aniversário é o único dia em que repetir o bolo três vezes é educação.",
+    "Você escaneou uma camisa e raspou a tela do celular. Que fase, hein.",
+    "Festa boa é aquela em que a coxinha some em cinco minutos.",
+    "Essa camisa é edição limitada. Igual a essa festa.",
+    "Se a música tocar, a aniversariante dança. É lei.",
+    "Tira outra foto. Alguém sempre pisca.",
+    "Quem chegou atrasado lava a louça. Brincadeira. Ou não.",
+    "Abraço de aniversário tem que durar no mínimo três segundos. Conta aí.",
+    "Parabéns sem palma não vale. Bate palma aí.",
+    "Aniversariante de dia, dona da pista de noite.",
+    "Uma vela a mais no bolo, um motivo a mais pra comemorar.",
+    "Quem tá lendo isso deve um abraço na aniversariante. Vai lá pagar.",
+    "O bolo não vai se comer sozinho. Ajuda aí.",
+    "Hoje é dia de rir alto, dançar torto e comer sem culpa.",
+    "Saiu essa? Raspa outra, que a próxima é melhor.",
+    "Ela disse que ia ser uma festinha simples. Ela mentiu.",
+    "Nessa festa, celular só sai do bolso pra foto e pra raspar frase.",
+    "Quem puxar o 'é big, é big' no parabéns ganha o primeiro pedaço. Talvez.",
+    "Um brinde à aniversariante! Pode ser de refri, ninguém julga.",
+    "Feliz aniversário pra quem transforma qualquer encontro em festa.",
+    "Escaneou de novo? Curioso, hein. Gostei.",
+    "{nome} fazendo aniversário e quem ganha a festa é a gente. Justo.",
+    "Se beber, não dirija. Se dançar, não filme. Se filmar, manda no grupo."
+  ]
+};
+
+(function () {
+  "use strict";
+
+  const $ = (s) => document.querySelector(s);
+  const nome = CONFIG.aniversariante;
+  const frases = CONFIG.frases.map((f) => f.replaceAll("{nome}", nome));
+  const total = frases.length;
+  const reduzMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const elNome = $("#nome");
+  const elFrase = $("#frase");
+  const elNumero = $("#numero");
+  const elContador = $("#contador");
+  const elAviso = $("#aviso");
+  const sombra = $("#bilheteSombra");
+  const area = $("#area");
+  const canvas = $("#cobertura");
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const btnOutra = $("#btnOutra");
+  const btnRevelar = $("#btnRevelar");
+  const btnZap = $("#btnZap");
+  const btnFotos = $("#btnFotos");
+
+  elNome.textContent = nome;
+  document.title = "Raspadinha da " + nome;
+
+  if (CONFIG.linkFotos) {
+    btnFotos.href = CONFIG.linkFotos;
+    btnFotos.hidden = false;
+  }
+
+  /* ---------- Estado salvo no celular (sem repetir frase) ---------- */
+  const CHAVE = "raspadinha-" + nome.toLowerCase();
+
+  function embaralhar(n) {
+    const a = Array.from({ length: n }, (_, i) => i);
+    for (let i = n - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function lerEstado() {
+    try {
+      const e = JSON.parse(localStorage.getItem(CHAVE));
+      if (
+        e && Array.isArray(e.ordem) && e.ordem.length === total &&
+        Number.isInteger(e.pos) && e.pos >= 0 && e.pos <= total &&
+        Number.isInteger(e.lidas) && e.lidas >= 0
+      ) return e;
+    } catch (_) { /* sem armazenamento: segue sem salvar */ }
+    return null;
+  }
+
+  function salvar() {
+    try { localStorage.setItem(CHAVE, JSON.stringify(estado)); } catch (_) { /* ignora */ }
+  }
+
+  let estado = lerEstado() || { ordem: embaralhar(total), pos: 0, lidas: 0 };
+  let indiceAtual = -1;
+  let revelada = false;
+  let geracao = 0;
+
+  function reembaralhar() {
+    const anterior = indiceAtual;
+    estado.ordem = embaralhar(total);
+    if (total > 1 && estado.ordem[0] === anterior) {
+      [estado.ordem[0], estado.ordem[1]] = [estado.ordem[1], estado.ordem[0]];
+    }
+    estado.pos = 0;
+  }
+
+  function atualizarContador() {
+    if (estado.lidas === 0) {
+      elContador.textContent = "São " + total + " frases escondidas. Boa sorte.";
+    } else if (estado.lidas < total) {
+      elContador.textContent = "Você já raspou " + estado.lidas + " de " + total + " frases.";
+    } else {
+      elContador.textContent = "Você raspou todas as " + total + ". Agora elas vão se repetir.";
+    }
+  }
+
+  /* ---------- Cobertura prateada ---------- */
+  let tamanhoPintado = "";
+  let riscos = 0;
+
+  function pintarCobertura() {
+    const r = canvas.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(r.width * dpr);
+    canvas.height = Math.round(r.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    tamanhoPintado = Math.round(r.width) + "x" + Math.round(r.height);
+    riscos = 0;
+
+    ctx.globalCompositeOperation = "source-over";
+    const g = ctx.createLinearGradient(0, 0, r.width, r.height);
+    g.addColorStop(0, "#E9EBF0");
+    g.addColorStop(0.45, "#B9BECA");
+    g.addColorStop(0.55, "#C8CCD6");
+    g.addColorStop(1, "#DDE0E7");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, r.width, r.height);
+
+    // brilho granulado de raspadinha
+    const pontos = Math.round((r.width * r.height) / 45);
+    for (let i = 0; i < pontos; i++) {
+      ctx.fillStyle = Math.random() < 0.5 ? "rgba(255,255,255,.55)" : "rgba(80,86,102,.22)";
+      ctx.fillRect(Math.random() * r.width, Math.random() * r.height, 1.6, 1.6);
+    }
+
+    ctx.fillStyle = "#5E6475";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = '800 26px "Baloo 2", system-ui, sans-serif';
+    ctx.fillText("Raspe aqui", r.width / 2, r.height / 2 - 12);
+    ctx.font = '600 16px "Baloo 2", system-ui, sans-serif';
+    ctx.fillText("com o dedo", r.width / 2, r.height / 2 + 18);
+
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fillStyle = "#000";
+    ctx.strokeStyle = "#000";
+  }
+
+  function tamanhoAtual() {
+    const r = canvas.getBoundingClientRect();
+    return Math.round(r.width) + "x" + Math.round(r.height);
+  }
+
+  function repintarSePreciso() {
+    if (revelada || riscos > 0) return;
+    if (tamanhoAtual() !== tamanhoPintado) pintarCobertura();
+  }
+
+  if ("ResizeObserver" in window) {
+    new ResizeObserver(repintarSePreciso).observe(canvas);
+  } else {
+    window.addEventListener("resize", repintarSePreciso);
+  }
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+      if (!revelada && riscos === 0) pintarCobertura();
+    });
+  }
+
+  /* ---------- Raspar ---------- */
+  const RAIO = 22;
+  let raspando = false;
+  let ultimo = null;
+  let ultimaChecagem = 0;
+
+  function ponto(e) {
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  function riscar(p) {
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = RAIO * 2;
+    ctx.beginPath();
+    if (ultimo) {
+      ctx.moveTo(ultimo.x, ultimo.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    } else {
+      ctx.arc(p.x, p.y, RAIO, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ultimo = p;
+    riscos++;
+  }
+
+  function checar() {
+    if (revelada) return;
+    const w = canvas.width, h = canvas.height;
+    if (!w || !h) return;
+    const dados = ctx.getImageData(0, 0, w, h).data;
+    let limpos = 0, amostras = 0;
+    for (let i = 3; i < dados.length; i += 28) {
+      amostras++;
+      if (dados[i] < 100) limpos++;
+    }
+    if (limpos / amostras > 0.55) revelar();
+  }
+
+  canvas.addEventListener("pointerdown", (e) => {
+    if (revelada) return;
+    e.preventDefault();
+    raspando = true;
+    ultimo = null;
+    try { canvas.setPointerCapture(e.pointerId); } catch (_) { /* ignora */ }
+    riscar(ponto(e));
+  });
+
+  canvas.addEventListener("pointermove", (e) => {
+    if (!raspando) return;
+    riscar(ponto(e));
+    const agora = performance.now();
+    if (agora - ultimaChecagem > 150) {
+      ultimaChecagem = agora;
+      checar();
+    }
+  });
+
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach((tipo) => {
+    canvas.addEventListener(tipo, () => {
+      if (!raspando) return;
+      raspando = false;
+      ultimo = null;
+      checar();
+    });
+  });
+
+  /* ---------- Mostrar / revelar ---------- */
+  function linkWhatsApp() {
+    const url = location.href.split("#")[0].split("?")[0];
+    const texto =
+      "\u201C" + frases[indiceAtual] + "\u201D\n\n" +
+      "Tirei essa na raspadinha do aniversário da " + nome + ". Raspe a sua: " + url;
+    return "https://wa.me/?text=" + encodeURIComponent(texto);
+  }
+
+  function mostrar(indice, animar) {
+    geracao++;
+    indiceAtual = indice;
+    revelada = false;
+    raspando = false;
+    ultimo = null;
+
+    elFrase.textContent = frases[indice];
+    elFrase.setAttribute("aria-hidden", "true");
+    elNumero.textContent = "nº " + String(indice + 1).padStart(3, "0");
+    elAviso.textContent = "";
+
+    // volta a cobertura na hora, sem deixar a frase aparecer
+    canvas.style.transition = "none";
+    canvas.classList.remove("sumindo");
+    canvas.hidden = false;
+    void canvas.offsetWidth;
+    canvas.style.transition = "";
+    pintarCobertura();
+
+    btnRevelar.style.visibility = "";
+    btnZap.hidden = true;
+
+    if (animar && !reduzMovimento) {
+      sombra.classList.remove("trocando");
+      void sombra.offsetWidth;
+      sombra.classList.add("trocando");
+    }
+  }
+
+  function revelar() {
+    if (revelada) return;
+    revelada = true;
+    raspando = false;
+    const minhaGeracao = geracao;
+
+    canvas.classList.add("sumindo");
+    setTimeout(() => {
+      if (revelada && geracao === minhaGeracao) canvas.hidden = true;
+    }, reduzMovimento ? 0 : 460);
+
+    elFrase.removeAttribute("aria-hidden");
+    elAviso.textContent = "Frase revelada: " + frases[indiceAtual];
+    btnRevelar.style.visibility = "hidden"; // some sem mexer no tamanho do bilhete
+    btnZap.href = linkWhatsApp();
+    btnZap.hidden = false;
+
+    estado.lidas++;
+    estado.pos++;
+    salvar();
+    atualizarContador();
+    soltarConfete();
+  }
+
+  btnRevelar.addEventListener("click", revelar);
+
+  btnOutra.addEventListener("click", () => {
+    if (!revelada) estado.pos++; // pulou sem raspar
+    if (estado.pos >= total) reembaralhar();
+    salvar();
+    mostrar(estado.ordem[estado.pos], true);
+    atualizarContador();
+  });
+
+  /* ---------- Confete ---------- */
+  const confete = $("#confete");
+  const cctx = confete.getContext("2d");
+  const CORES = ["#FF4F8B", "#2B0F4C", "#1FB5A8", "#FFFFFF", "#FF9F1C"];
+  let particulas = [];
+  let animando = false;
+
+  function soltarConfete() {
+    if (reduzMovimento) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    confete.width = Math.round(innerWidth * dpr);
+    confete.height = Math.round(innerHeight * dpr);
+    cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const r = area.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
+    for (let i = 0; i < 110; i++) {
+      const ang = Math.random() * Math.PI * 2;
+      const vel = 4 + Math.random() * 7;
+      particulas.push({
+        x: cx, y: cy,
+        vx: Math.cos(ang) * vel,
+        vy: Math.sin(ang) * vel - 5,
+        g: 0.22 + Math.random() * 0.1,
+        w: 6 + Math.random() * 6,
+        h: 8 + Math.random() * 8,
+        rot: Math.random() * Math.PI * 2,
+        vr: (Math.random() - 0.5) * 0.3,
+        cor: CORES[i % CORES.length],
+        vida: 0
+      });
+    }
+    if (!animando) {
+      animando = true;
+      requestAnimationFrame(quadro);
+    }
+  }
+
+  function quadro() {
+    cctx.clearRect(0, 0, innerWidth, innerHeight);
+    particulas = particulas.filter((p) => p.y < innerHeight + 40 && p.vida < 240);
+    for (const p of particulas) {
+      p.vida++;
+      p.vx *= 0.985;
+      p.vy += p.g;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+      cctx.save();
+      cctx.translate(p.x, p.y);
+      cctx.rotate(p.rot);
+      cctx.fillStyle = p.cor;
+      cctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h * Math.abs(Math.cos(p.vida * 0.15 + p.rot)) + 1);
+      cctx.restore();
+    }
+    if (particulas.length) {
+      requestAnimationFrame(quadro);
+    } else {
+      animando = false;
+      cctx.clearRect(0, 0, innerWidth, innerHeight);
+    }
+  }
+
+  /* ---------- Início ---------- */
+  if (estado.pos >= total) reembaralhar();
+  salvar();
+  mostrar(estado.ordem[estado.pos], false);
+  atualizarContador();
+})();
+</script>
+</body>
+</html>
