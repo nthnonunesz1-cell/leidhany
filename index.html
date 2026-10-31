@@ -223,7 +223,8 @@
   .frase.longa { font-size: clamp(1.12rem, 4.8vw, 1.4rem); }
   .cobertura {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     touch-action: none;
@@ -306,7 +307,8 @@
 
   #confete {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     pointer-events: none;
@@ -809,8 +811,11 @@ const CONFIG = {
   let particulas = [];
   let animando = false;
 
+  let ultimoQuadro = 0;
+
+  // Sai sempre, inclusive em celular com "reduzir movimento" ligado
+  // (nesse caso sai uma chuva menor e mais curta).
   function soltarConfete() {
-    if (reduzMovimento) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     confete.width = Math.round(innerWidth * dpr);
     confete.height = Math.round(innerHeight * dpr);
@@ -819,7 +824,8 @@ const CONFIG = {
     const r = area.getBoundingClientRect();
     const cx = r.left + r.width / 2;
     const cy = r.top + r.height / 2;
-    for (let i = 0; i < 110; i++) {
+    const qtd = reduzMovimento ? 45 : 110;
+    for (let i = 0; i < qtd; i++) {
       const ang = Math.random() * Math.PI * 2;
       const vel = 4 + Math.random() * 7;
       particulas.push({
@@ -837,20 +843,26 @@ const CONFIG = {
     }
     if (!animando) {
       animando = true;
+      ultimoQuadro = 0;
       requestAnimationFrame(quadro);
     }
   }
 
-  function quadro() {
+  function quadro(agora) {
+    // passo baseado no tempo: mesma velocidade em tela de 60 Hz ou 120 Hz
+    const passo = ultimoQuadro ? Math.min((agora - ultimoQuadro) / 16.67, 3) : 1;
+    ultimoQuadro = agora;
+    const vidaMax = reduzMovimento ? 120 : 240;
+
     cctx.clearRect(0, 0, innerWidth, innerHeight);
-    particulas = particulas.filter((p) => p.y < innerHeight + 40 && p.vida < 240);
+    particulas = particulas.filter((p) => p.y < innerHeight + 40 && p.vida < vidaMax);
     for (const p of particulas) {
-      p.vida++;
-      p.vx *= 0.985;
-      p.vy += p.g;
-      p.x += p.vx;
-      p.y += p.vy;
-      p.rot += p.vr;
+      p.vida += passo;
+      p.vx *= Math.pow(0.985, passo);
+      p.vy += p.g * passo;
+      p.x += p.vx * passo;
+      p.y += p.vy * passo;
+      p.rot += p.vr * passo;
       cctx.save();
       cctx.translate(p.x, p.y);
       cctx.rotate(p.rot);
