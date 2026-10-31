@@ -138,8 +138,12 @@
     line-height: 1.25;
     text-align: center;
     text-wrap: balance;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+    white-space: pre-line; /* respeita as quebras de linha das frases */
+    min-width: 0;
+    max-width: 100%;
   }
+  .frase.longa { font-size: clamp(1.12rem, 4.8vw, 1.4rem); }
   .cobertura {
     position: absolute;
     inset: 0;
@@ -291,53 +295,31 @@
    - linkFotos: cole o link do site de fotos da festa para aparecer o
      botão "Tirar foto com a arte da festa" (deixe "" para esconder)
    - frases: pode adicionar, tirar ou trocar à vontade
+     (use \n dentro da frase para quebrar a linha)
    ===================================================================== */
 const CONFIG = {
   aniversariante: "Leidhany",
   linkFotos: "",
   frases: [
-    "{nome} não fica mais velha. Ela sobe de nível.",
-    "Vim pelo bolo, fiquei pela aniversariante. Mentira, vim pelo bolo.",
-    "#ColaEmMimQueÉSucesso",
-    "Ela não tá envelhecendo. Tá ficando vintage.",
-    "Presente bom é presença. Mas pix também é presença, viu?",
-    "Ninguém vai embora antes do parabéns. Ninguém.",
-    "Hoje a dieta tirou folga e esqueceu de voltar.",
-    "Regra da festa: quem cantar o parabéns desafinado canta de novo.",
-    "Quem dança mal dança com mais vontade. Vai pra pista.",
-    "Se não tirou foto com a aniversariante, você nem veio.",
-    "Mandou parabéns à meia-noite em ponto? Subiu no conceito dela.",
-    "Aqui ninguém tem idade. Só tem disposição.",
-    "Atenção: aniversariante sob efeito de felicidade. Mantenha distância do bolo dela.",
-    "Hoje a pista é dela, o bolo é dela e o microfone também.",
-    "Elogiar a aniversariante conta como presente. Capricha.",
-    "Mais um ano de 'só mais uma música e eu vou embora'.",
-    "Amanhã não é ressaca. É saudade da festa.",
-    "Diz a lenda que o primeiro pedaço de bolo vai pro preferido. Torce aí.",
-    "A aniversariante pediu pra não contar a idade dela. A gente obedeceu.",
-    "Aniversário é o único dia em que repetir o bolo três vezes é educação.",
-    "Você escaneou uma camisa e raspou a tela do celular. Que fase, hein.",
-    "Festa boa é aquela em que a coxinha some em cinco minutos.",
-    "Essa camisa é edição limitada. Igual a essa festa.",
-    "Se a música tocar, a aniversariante dança. É lei.",
-    "Tira outra foto. Alguém sempre pisca.",
-    "Quem chegou atrasado lava a louça. Brincadeira. Ou não.",
-    "Abraço de aniversário tem que durar no mínimo três segundos. Conta aí.",
-    "Parabéns sem palma não vale. Bate palma aí.",
-    "Aniversariante de dia, dona da pista de noite.",
-    "Uma vela a mais no bolo, um motivo a mais pra comemorar.",
-    "Quem tá lendo isso deve um abraço na aniversariante. Vai lá pagar.",
-    "O bolo não vai se comer sozinho. Ajuda aí.",
-    "Hoje é dia de rir alto, dançar torto e comer sem culpa.",
-    "Saiu essa? Raspa outra, que a próxima é melhor.",
-    "Ela disse que ia ser uma festinha simples. Ela mentiu.",
-    "Nessa festa, celular só sai do bolso pra foto e pra raspar frase.",
-    "Quem puxar o 'é big, é big' no parabéns ganha o primeiro pedaço. Talvez.",
-    "Um brinde à aniversariante! Pode ser de refri, ninguém julga.",
-    "Feliz aniversário pra quem transforma qualquer encontro em festa.",
-    "Escaneou de novo? Curioso, hein. Gostei.",
-    "{nome} fazendo aniversário e quem ganha a festa é a gente. Justo.",
-    "Se beber, não dirija. Se dançar, não filme. Se filmar, manda no grupo."
+    "Aviso aos convidados:\nA aniversariante não se responsabiliza por fotos, vídeos e resenhas após o cooler.",
+    "Está gostando da festa?\nEntão dance como se ninguém estivesse filmando.",
+    "Está gostando da festa?\nPegue o microfone e faça um elogio a Leidy.",
+    "Está gostando da festa?\nJunte a galera e tire fotos.",
+    "Nosso lema hoje é divertir à vontade.",
+    "Coma, beba e divirta-se à vontade.",
+    "E não pode faltar o…\n#ColaEmMimQueÉSucesso",
+    "Se não aguenta…",
+    "Aqui a resenha é garantida.\nFaça parte das nossas risadas.",
+    "Cante uma música dedicada à aniversariante.",
+    "Brinde com alguém que você ainda não abraçou hoje.",
+    "Está gostando da festa?\nPegue o microfone e diga por que Leidy merece ser celebrada.",
+    "Entreviste alguém:\nQual é o segredo da juventude de Leidy?",
+    "Pegue o microfone e peça às Divas para cantar a música de Ninha.",
+    "Aqui só é permitido sair no final da festa…\nDepois de tudo arrumado.",
+    "Você faz parte da minha história.\nObrigada por estar aqui.",
+    "Meus pais. Amor incondicional ❤️\nRepasse esse recado para eles.",
+    "Esposo e filho sempre me apoiando. Amo vocês ❤️\nChame eles para aquela foto massa!",
+    "Tome aquele drink no capricho."
   ]
 };
 
@@ -559,6 +541,21 @@ const CONFIG = {
     });
   });
 
+  /* ---------- Fonte que cabe (palavras longas, tipo hashtag) ---------- */
+  function ajustarFonte() {
+    elFrase.style.fontSize = "";
+    elFrase.style.overflowWrap = "normal"; // mede sem quebrar palavra no meio
+    let tam = parseFloat(getComputedStyle(elFrase).fontSize);
+    while (elFrase.scrollWidth > elFrase.clientWidth + 1 && tam > 14) {
+      tam -= 1;
+      elFrase.style.fontSize = tam + "px";
+    }
+    elFrase.style.overflowWrap = ""; // se nem assim couber, quebra a palavra
+  }
+
+  window.addEventListener("resize", ajustarFonte);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajustarFonte);
+
   /* ---------- Mostrar / revelar ---------- */
   function linkWhatsApp() {
     const url = location.href.split("#")[0].split("?")[0];
@@ -576,6 +573,8 @@ const CONFIG = {
     ultimo = null;
 
     elFrase.textContent = frases[indice];
+    elFrase.classList.toggle("longa", frases[indice].length > 80);
+    ajustarFonte();
     elFrase.setAttribute("aria-hidden", "true");
     elNumero.textContent = "nº " + String(indice + 1).padStart(3, "0");
     elAviso.textContent = "";
