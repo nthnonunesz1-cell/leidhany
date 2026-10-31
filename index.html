@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#FFD23F">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Baloo+2:wght@500;600;700;800&family=Caveat:wght@700&display=swap" rel="stylesheet">
 <style>
   /* ===== CORES E FONTES (troque aqui para combinar com a camisa) ===== */
   :root {
@@ -87,8 +87,85 @@
   }
   .bilhete-sombra.trocando { animation: entra .35s ease-out; }
   @keyframes entra {
-    from { transform: translateY(12px) rotate(-2deg); opacity: .2; }
-    to   { transform: none; opacity: 1; }
+    from { transform: translateY(12px) rotate(-2deg); }
+    to   { transform: none; }
+  }
+
+  /* ===== Palco: bilhete + polaroid que salta de trás dele ===== */
+  .palco {
+    position: relative;
+    width: 100%;
+  }
+  .palco .bilhete-sombra {
+    position: relative;
+    z-index: 2;
+  }
+
+  .polaroid {
+    --pw: 200px;          /* largura (calculada no JS) */
+    --giro: -6deg;        /* inclinação (sorteada no JS) */
+    --sobre: 46px;        /* quanto ela fica por cima do bilhete */
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    bottom: calc(100% - var(--sobre));
+    width: var(--pw);
+    margin: 0 0 0 calc(var(--pw) / -2);
+    padding: 10px 10px 0;
+    background: #fff;
+    border-radius: 3px;
+    box-shadow: 0 8px 18px rgba(43, 15, 76, .3);
+    opacity: 0;
+    transform: translateY(85%);
+    pointer-events: none;
+  }
+  .polaroid::before { /* fita adesiva */
+    content: "";
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    width: 76px;
+    height: 24px;
+    margin-left: -38px;
+    background: rgba(255, 246, 214, .8);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
+    transform: rotate(-4deg);
+  }
+  .polaroid img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    background: #EDE6EE;
+  }
+  .polaroid figcaption {
+    padding: 7px 0 10px;
+    font-family: "Caveat", "Comic Sans MS", cursive;
+    font-weight: 700;
+    font-size: 1.6rem;
+    line-height: 1;
+    text-align: center;
+    color: var(--tinta);
+  }
+  .polaroid figcaption .coracao { color: var(--bilhete); }
+
+  .polaroid.saltou {
+    z-index: 3;
+    opacity: 1;
+    transform: translateY(0) rotate(var(--giro));
+    animation: salta .9s cubic-bezier(.2, .8, .3, 1) both;
+  }
+  @keyframes salta {
+    0%   { z-index: 1; opacity: 1; transform: translateY(85%) rotate(0deg); }
+    55%  { z-index: 1; transform: translateY(-14%) rotate(calc(var(--giro) * 2)); }
+    56%  { z-index: 3; }
+    100% { z-index: 3; opacity: 1; transform: translateY(0) rotate(var(--giro)); }
+  }
+  .polaroid.guardando { animation: guarda .35s ease-in forwards; }
+  @keyframes guarda {
+    from { z-index: 1; opacity: 1; transform: translateY(0) rotate(var(--giro)); }
+    to   { z-index: 1; opacity: 0; transform: translateY(85%) rotate(0deg); }
   }
 
   .bilhete {
@@ -257,6 +334,12 @@
     <p>Tem uma frase escondida no bilhete.<br>Raspe com o dedo.</p>
   </header>
 
+  <div class="palco" id="palco">
+  <figure class="polaroid" id="polaroid" aria-hidden="true">
+    <img id="fotoImg" alt="Foto da aniversariante" width="640" height="640" decoding="async">
+    <figcaption><span id="legenda">Leidy</span> <span class="coracao">♥</span></figcaption>
+  </figure>
+
   <div class="bilhete-sombra" id="bilheteSombra">
     <section class="bilhete" aria-label="Bilhete de raspadinha">
       <div class="bilhete-topo">
@@ -274,6 +357,7 @@
         <button type="button" class="botao-texto" id="btnRevelar">Revelar sem raspar</button>
       </div>
     </section>
+  </div>
   </div>
 
   <div class="acoes">
@@ -296,10 +380,19 @@
      botão "Tirar foto com a arte da festa" (deixe "" para esconder)
    - frases: pode adicionar, tirar ou trocar à vontade
      (use \n dentro da frase para quebrar a linha)
+   - fotos: fotos da polaroid que salta quando revela a frase. Ficam na
+     mesma pasta do index.html. Deixe [] para não mostrar polaroid.
+   - legendaFoto: o que vem escrito embaixo da foto
    ===================================================================== */
 const CONFIG = {
   aniversariante: "Leidhany",
   linkFotos: "",
+  fotos: [
+    "leidy-01.jpg", "leidy-02.jpg", "leidy-03.jpg", "leidy-04.jpg",
+    "leidy-05.jpg", "leidy-06.jpg", "leidy-07.jpg", "leidy-08.jpg",
+    "leidy-09.jpg", "leidy-10.jpg", "leidy-11.jpg"
+  ],
+  legendaFoto: "Leidy",
   frases: [
     "Aviso aos convidados:\nA aniversariante não se responsabiliza por fotos, vídeos e resenhas após o cooler.",
     "Está gostando da festa?\nEntão dance como se ninguém estivesse filmando.",
@@ -556,6 +649,81 @@ const CONFIG = {
   window.addEventListener("resize", ajustarFonte);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajustarFonte);
 
+  /* ---------- Polaroid ---------- */
+  const fotos = Array.isArray(CONFIG.fotos) ? CONFIG.fotos : [];
+  const palco = $("#palco");
+  const polaroid = $("#polaroid");
+  const fotoImg = $("#fotoImg");
+  $("#legenda").textContent = CONFIG.legendaFoto || nome;
+
+  let ordemFotos = embaralhar(fotos.length);
+  let posFoto = 0;
+  let fotoDaVez = null;
+  let fotoMostrada = false;
+
+  function proximaFoto() {
+    if (!fotos.length) return null;
+    if (posFoto >= fotos.length) {
+      const ultima = ordemFotos[fotos.length - 1];
+      ordemFotos = embaralhar(fotos.length);
+      if (fotos.length > 1 && ordemFotos[0] === ultima) {
+        [ordemFotos[0], ordemFotos[1]] = [ordemFotos[1], ordemFotos[0]];
+      }
+      posFoto = 0;
+    }
+    return fotos[ordemFotos[posFoto++]];
+  }
+
+  // escolhe a foto do próximo bilhete e já deixa carregando
+  function prepararFoto() {
+    fotoDaVez = proximaFoto();
+    if (!fotoDaVez) return;
+    new Image().src = fotoDaVez;
+    if (!fotoMostrada && !polaroid.classList.contains("guardando")) fotoImg.src = fotoDaVez;
+  }
+
+  // tamanho da polaroid: cabe entre o topo da página e o bilhete
+  function dimensionarPolaroid() {
+    const topoPalco = palco.getBoundingClientRect().top + window.scrollY;
+    const sobre = 46, margem = 24, pad = 10, legenda = 46;
+    let w = topoPalco + sobre - margem - legenda + pad;
+    w = Math.min(w, palco.clientWidth * 0.66, 260);
+    w = Math.max(w, 140);
+    polaroid.style.setProperty("--pw", Math.round(w) + "px");
+  }
+
+  function mostrarPolaroid() {
+    if (!fotoDaVez) return;
+    if (fotoImg.getAttribute("src") !== fotoDaVez) fotoImg.src = fotoDaVez;
+    dimensionarPolaroid();
+    const giro = (Math.random() < 0.5 ? -1 : 1) * (4 + Math.random() * 4);
+    polaroid.style.setProperty("--giro", giro.toFixed(1) + "deg");
+    polaroid.classList.remove("guardando", "saltou");
+    void polaroid.offsetWidth;
+    polaroid.classList.add("saltou");
+    polaroid.setAttribute("aria-hidden", "false");
+    fotoMostrada = true;
+    if (window.scrollY > 4) {
+      window.scrollTo({ top: 0, behavior: reduzMovimento ? "auto" : "smooth" });
+    }
+  }
+
+  function guardarPolaroid() {
+    if (!fotoMostrada) return;
+    fotoMostrada = false;
+    polaroid.setAttribute("aria-hidden", "true");
+    polaroid.classList.remove("saltou");
+    if (!reduzMovimento) polaroid.classList.add("guardando");
+  }
+
+  polaroid.addEventListener("animationend", (e) => {
+    if (e.animationName !== "guarda") return;
+    polaroid.classList.remove("guardando");
+    if (fotoDaVez && !fotoMostrada) fotoImg.src = fotoDaVez;
+  });
+
+  window.addEventListener("resize", () => { if (fotoMostrada) dimensionarPolaroid(); });
+
   /* ---------- Mostrar / revelar ---------- */
   function linkWhatsApp() {
     const url = location.href.split("#")[0].split("?")[0];
@@ -589,6 +757,7 @@ const CONFIG = {
 
     btnRevelar.style.visibility = "";
     btnZap.hidden = true;
+    prepararFoto();
 
     if (animar && !reduzMovimento) {
       sombra.classList.remove("trocando");
@@ -619,6 +788,7 @@ const CONFIG = {
     salvar();
     atualizarContador();
     soltarConfete();
+    mostrarPolaroid();
   }
 
   btnRevelar.addEventListener("click", revelar);
@@ -627,6 +797,7 @@ const CONFIG = {
     if (!revelada) estado.pos++; // pulou sem raspar
     if (estado.pos >= total) reembaralhar();
     salvar();
+    guardarPolaroid();
     mostrar(estado.ordem[estado.pos], true);
     atualizarContador();
   });
